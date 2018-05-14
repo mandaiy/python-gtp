@@ -61,11 +61,11 @@ class GoGuiGTPRunner(GTPRunner):
 
         self._analyze_callbacks = []
 
-        self.add_callback('gogui_analyze_commands', self.cmd_gogui_analyze_commands)
+        self.add_callback('gogui_analyze_commands', self.cmd_gogui_analyze_commands, arity=0)
 
-    def add_gfx_callback(self, name: str, callback: Callable[..., Tuple[Status, str]]) -> None:
+    def add_gfx_callback(self, name: str, callback: Callable[..., Tuple[Status, str]], arity: int, description: str=None) -> None:
         self._analyze_callbacks.append("gfx/{name}/{name}".format(name=name))
-        self.add_callback(name, callback)
+        self.add_callback(name, callback, arity, description)
         self._logger.debug("Added '%s' as GFX callback" % name)
 
     def cmd_gogui_analyze_commands(self, *_) -> (Status, str):

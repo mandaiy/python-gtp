@@ -1,12 +1,20 @@
 import enum
+import sys
+from collections import namedtuple
 
 from logging import getLogger
 from typing import Callable, Tuple
 from typing import Dict
 
-import sys
 
 Status = enum.Enum('Status', 'success failure quit noop')
+
+
+Callback = namedtuple('Callback', 'f arity description')
+
+
+class GTPRuntimeError(Exception):
+    pass
 
 
 class GTPRunner:
@@ -14,39 +22,55 @@ class GTPRunner:
     def __init__(self, *, logger=None):
         self._logger = logger or getLogger(__name__)
 
-        self._callbacks = {}  # type: Dict[str, Callable[..., Tuple[Status, str]]]
-        self._callback_description = {}  # type: Dict[str, str]
+        self._callbacks = {}  # type: Dict[str, Callback]
 
-        self.add_callback('quit', self.cmd_quit)
-        self.add_callback('list_commands', self.cmd_list_commands)
-        self.add_callback('help', self.cmd_help)
+        self.add_callback('quit', self.cmd_quit, arity=0)
+        self.add_callback('list_commands', self.cmd_list_commands, arity=0)
+        self.add_callback('help', self.cmd_help, arity=0)
 
         self.add_static_callback('protocol_version', '2')
 
-    def add_callback(self, name: str, callback: Callable[..., Tuple[Status, str]], description: str=None) -> None:
-        self._logger.debug("Add callback '%s'" % name)
-        self._callbacks[name] = callback
-        self._callback_description[name] = description
+    def add_callback(self, name: str, f: Callable[..., Tuple[Status, str]], arity: int, description: str=None) -> None:
+        self._logger.debug("Add callback '%s' (arity: %d, description: %s)" % (name, arity, description))
+
+        if arity < 0:
+            raise ValueError("arity should be greater than or equal to 0, which is %d" % arity)
+
+        self._callbacks[name] = Callback(f, arity, description)
 
     def add_static_callback(self, name: str, value: str) -> None:
-        self.add_callback(name, lambda *args: (Status.success, value))
+        self.add_callback(name, lambda *args: (Status.success, value), arity=0)
 
     def execute_one_command(self, line: str) -> Tuple[Status, str]:
         words = line.split()
+
+        if not words:
+            return Status.noop, ""
+
         command = words[0]
         params = words[1:]
 
-        if command in self._callbacks:
+        if command not in self._callbacks:
+            return self.cmd_unknown_command(command)
+
+        callback = self._callbacks[command]
+
+        if len(params) != callback.arity:
+            return Status.failure, "Callback `%s` required %d argument(s), but provided %d argument(s)" \
+                   % (command, callback.arity, len(params))
+
+        try:
             self._logger.debug("execute command '%s' with arguments %s" % (command, params))
 
-            try:
-                return self._callbacks[command](*params)
-            except TypeError as e:
-                description = "`{}`".format(self._callback_description[command] or "unavailable")
+            if callback.arity == 0:
+                return callback.f()
+            else:
+                return callback.f(*params)
 
-                return Status.failure, "Failure occurred ({e}). usage: {u}".format(e=e, u=description)
+        except GTPRuntimeError as e:
+            description = "`{}`".format(callback.description or "unavailable")
 
-        return self.cmd_unknown_command(command)
+            return Status.failure, "Internal error occurred ({e}). usage: {u}".format(e=e, u=description)
 
     def execute(self, stdin=None, stdout=None) -> None:
         stdin = stdin or sys.stdin
