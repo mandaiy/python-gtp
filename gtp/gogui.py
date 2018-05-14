@@ -7,8 +7,8 @@ from gtp import Status, GTPRunner
 class GFXType(str, enum.Enum):
     influence = 'INFLUENCE'
     label = 'LABEL'
-    variation = 'VARIATION'
-    status = 'STATUS'
+    variation = 'VAR'
+    status = 'TEXT'
     color = 'COLOR'
 
 
@@ -16,6 +16,9 @@ class GFXSymbol(str, enum.Enum):
     square = 'SQUARE'
     triangle = 'TRIANGLE'
     circle = 'CIRCLE'
+    mark = 'MARK'
+    white = 'WHITE'
+    black = 'BLACK'
 
 
 class GFX:
@@ -33,8 +36,8 @@ class GFX:
     def set_label(self, vertex: str, label: str) -> None:
         self._output[GFXType.label] = self._output.get(GFXType.label, '') + "{} {} ".format(vertex, label)
 
-    def add_variation(self, player_and_vertex: str) -> None:
-        self._output[GFXType.variation] = self._output.get(GFXType.variation, '') + "{} ".format(player_and_vertex)
+    def add_variation(self, player: str, vertex: str) -> None:
+        self._output[GFXType.variation] = self._output.get(GFXType.variation, '') + "{} {}".format(player, vertex)
 
     def set_status(self, status: str) -> None:
         self._output[GFXType.status] = status
