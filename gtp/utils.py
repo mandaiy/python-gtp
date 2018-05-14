@@ -72,12 +72,3 @@ def move_to_str(move) -> Optional[str]:
     return "%s%s" % (row, col)
 
 
-def probability_to_color(p: float) -> str:
-    """Returns a color code based on how high the probability is."""
-    assert 0.0 <= p <= 1, "Probability should be in [0, 1], got %f" % p
-
-    r = 0
-    g = int(255 * p)
-    b = int(255 * (1 - p))
-
-    return "#{:02X}{:02X}{:02X}".format(r, g, b)
