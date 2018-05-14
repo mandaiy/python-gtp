@@ -68,9 +68,10 @@ class GTPRunner:
                 return callback.f(*params)
 
         except GTPRuntimeError as e:
-            description = "`{}`".format(callback.description or "unavailable")
-
-            return Status.failure, "Internal error occurred ({e}). usage: {u}".format(e=e, u=description)
+            if callback.description is None:
+                return Status.failure, "Internal error occurred.\n{}".format(e)
+            else:
+                return Status.failure, "Internal error occurred.\n{}\nusage: {}".format(e, callback.description)
 
     def execute(self, stdin=None, stdout=None) -> None:
         stdin = stdin or sys.stdin
