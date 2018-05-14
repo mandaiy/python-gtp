@@ -70,5 +70,3 @@ def move_to_str(move) -> Optional[str]:
     col = move[1] + 1
 
     return "%s%s" % (row, col)
-
-
