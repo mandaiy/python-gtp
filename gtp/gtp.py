@@ -3,7 +3,7 @@ import sys
 from collections import namedtuple
 
 from logging import getLogger
-from typing import Callable, Tuple
+from typing import Callable, Tuple, List
 from typing import Dict
 
 
@@ -95,8 +95,12 @@ class GTPRunner:
             if status == Status.quit:
                 break
 
+    @property
+    def list_commands(self) -> List[str]:
+        return [command for command in self._callbacks.keys()]
+
     def cmd_list_commands(self, *_) -> Tuple[Status, str]:
-        return Status.success, "\n".join([command for command in self._callbacks.keys()])
+        return Status.success, "\n".join(self.list_commands)
 
     def cmd_known_commands(self, *_) -> Tuple[Status, str]:
         return self.cmd_list_commands(_)
