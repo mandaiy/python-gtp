@@ -4,6 +4,22 @@ from typing import Callable, Tuple
 from gtp import Status, GTPRunner
 
 
+class CommandType(str, enum.Enum):
+    SBOARD = 'sboard'
+    DBOARD = 'dboard'
+    CBOARD = 'cboard'
+    STRING = 'string'
+    HSTRING = 'hstring'
+    HPSTRING = 'hpstring'
+    PSTRING = 'pstring'
+    PLIST = 'plist'
+    PARAM = 'param'
+    PSPAIRS = 'pspairs'
+    VARC = 'varc'
+    GFX = 'gfx'
+    NONE = 'none'
+
+
 class GFXType(str, enum.Enum):
     influence = 'INFLUENCE'
     label = 'LABEL'
@@ -63,10 +79,26 @@ class GoGuiGTPRunner(GTPRunner):
 
         self.add_callback('gogui_analyze_commands', self.cmd_gogui_analyze_commands, arity=0)
 
-    def add_gfx_callback(self, name: str, callback: Callable[..., Tuple[Status, str]], arity: int, description: str=None) -> None:
-        self._analyze_callbacks.append("gfx/{name}/{name}".format(name=name))
-        self.add_callback(name, callback, arity, description)
-        self._logger.debug("Added '%s' as GFX callback" % name)
+    def add_analyze_callback(self,
+                             command_type: CommandType,
+                             command_str: str,
+                             callback: Callable[..., Tuple[Status, str]],
+                             display_name: str=None,
+                             description: str=None) -> None:
 
-    def cmd_gogui_analyze_commands(self, *_) -> (Status, str):
+        command_tokens = command_str.split()
+
+        self._assert_command_tokens(command_tokens)
+        self._analyze_callbacks.append("%s/%s/%s" % (command_type.value, display_name or command_str, command_str))
+
+        self.add_callback(command_tokens[0], callback, arity=len(command_tokens) - 1, description=description)
+
+    def cmd_gogui_analyze_commands(self, *_) -> Tuple[Status, str]:
         return Status.success, "\n".join(self._analyze_callbacks)
+
+    @staticmethod
+    def _assert_command_tokens(command_tokens) -> None:
+        assert len(command_tokens) > 0
+
+        for param in command_tokens[1:]:
+            assert param in {'%s', '%p', '%c', '%w', '%r'}
