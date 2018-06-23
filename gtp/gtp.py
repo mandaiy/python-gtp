@@ -36,6 +36,9 @@ class GTPRunner:
         if arity < 0:
             raise ValueError("arity should be greater than or equal to 0, which is %d" % arity)
 
+        if name in self._callbacks:
+            raise ValueError("callback named `%s` is already registered" % name)
+
         self._callbacks[name] = Callback(f, arity, description)
 
     def add_static_callback(self, name: str, value: str) -> None:
