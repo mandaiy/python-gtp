@@ -22,4 +22,3 @@ setup(
     install_requires=_read_requirements('requirements.txt'),
     test_suites='tests'
 )
-
