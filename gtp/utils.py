@@ -1,3 +1,4 @@
+import enum
 import re
 
 from typing import Optional, Tuple
@@ -8,11 +9,12 @@ _VALID_MOVE_PATTERN = r"[A-HJ-T][\d]{1,2}"
 _MATCHER = re.compile(_VALID_MOVE_PATTERN, re.IGNORECASE)
 
 
-COLOR_BLACK = 'black'
-COLOR_WHITE = 'white'
+class GTPColor(str, enum.Enum):
+    BLACK = 'b'
+    WHITE = 'w'
 
 
-def parse_color(color_str: str) -> str:
+def parse_color(color_str: str) -> GTPColor:
     """
     Parses a given string and returns a formatted string
     as per the result of parsing if the string is
@@ -23,10 +25,11 @@ def parse_color(color_str: str) -> str:
     :return: either `COLOR_BLACK` or `COLOR_WHITE`:
     :exception ValueError if `color_str` is an invalid gtp color string
     """
-    if color_str.upper() == 'B':
-        return COLOR_BLACK
-    elif color_str.upper() == 'W':
-        return COLOR_WHITE
+    if color_str.lower() == GTPColor.BLACK.value:
+        return GTPColor.BLACK
+
+    if color_str.lower() == GTPColor.WHITE.value:
+        return GTPColor.WHITE
 
     raise ValueError("Cannot parse string `%s`" % color_str)
 

@@ -1,16 +1,16 @@
 import unittest
 
-from gtp.utils import parse_color, parse_move, move_to_str, COLOR_BLACK, COLOR_WHITE
+from gtp.utils import parse_color, parse_move, move_to_str, GTPColor
 
 
 class TestGtpUtils(unittest.TestCase):
 
     def test_parse_color_when_argument_is_valid_then_returns_color(self):
-        self.assertEqual(COLOR_BLACK, parse_color('b'))
-        self.assertEqual(COLOR_BLACK, parse_color('B'))
+        self.assertEqual(GTPColor.BLACK, parse_color('b'))
+        self.assertEqual(GTPColor.BLACK, parse_color('B'))
 
-        self.assertEqual(COLOR_WHITE, parse_color('w'))
-        self.assertEqual(COLOR_WHITE, parse_color('W'))
+        self.assertEqual(GTPColor.WHITE, parse_color('w'))
+        self.assertEqual(GTPColor.WHITE, parse_color('W'))
 
     def test_parse_color_when_argument_is_invalid_then_returns_none(self):
         self.assertRaises(ValueError, parse_color, 'invalid')
