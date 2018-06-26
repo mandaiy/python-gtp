@@ -32,8 +32,8 @@ class TestGoGuiParam(TestCase):
 
     def test_init(self):
         params = GoGuiParams([
-            GoGuiParam('param1', 'bool', 1),
-            GoGuiParam('param2', 'string', 'foo')
+            GoGuiParam('param1', bool, 'bool', 1),
+            GoGuiParam('param2', str, 'string', 'foo')
         ])
 
         expected_str = '[bool] param1 1\n[string] param2 foo'
@@ -41,7 +41,7 @@ class TestGoGuiParam(TestCase):
         self.assertIn('param1', params.param_names)
         self.assertIn('param2', params.param_names)
 
-        self.assertEqual(1, params.param1)
+        self.assertEqual(True, params.param1)
         self.assertEqual('foo', params.param2)
 
         self.assertEqual(expected_str, str(params))
@@ -49,7 +49,7 @@ class TestGoGuiParam(TestCase):
 
     def test_update(self):
         params = GoGuiParams([
-            GoGuiParam('param', 'bool', 0)
+            GoGuiParam('param', bool, 'bool', 0)
         ])
 
         self.assertEqual(0, params.param)

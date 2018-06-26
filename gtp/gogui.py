@@ -21,7 +21,7 @@ class CommandType(str, enum.Enum):
     NONE = 'none'
 
 
-GoGuiParam = namedtuple('GoGuiParam', 'name type value')
+GoGuiParam = namedtuple('GoGuiParam', 'name type gogui_type value')
 
 
 class GoGuiParams:
@@ -30,24 +30,35 @@ class GoGuiParams:
         self.params = OrderedDict()
 
         for param in params:
-            self.params[param.name] = (param.type, param.value)
+            self.params[param.name] = (param.type, param.gogui_type, param.value)
 
     @property
     def param_names(self):
         return self.params.keys()
 
+    def keys(self):
+        return self.param_names
+
+    def __getitem__(self, key):
+        if key in self.params:
+            return self.__getattr__(key)
+
+        raise KeyError
+
     def __getattr__(self, name):
         if name in self.params:
-            return self.params[name][1]
+            param_type, _, param_value = self.params[name]
+
+            return param_type(param_value)
 
         raise AttributeError
 
-    def update(self, param_name, value):
-        assert param_name in self.params
+    def update(self, key, value):
+        assert key in self.params
 
-        param_type = self.params[param_name][0]
+        param_type, gogui_type, _ = self.params[key]
 
-        self.params[param_name] = (param_type, value)
+        self.params[key] = (param_type, gogui_type, value)
 
     def __call__(self, param_name=None, param_value=None):
         if param_name is None and param_value is None:
@@ -58,8 +69,8 @@ class GoGuiParams:
         return Status.success, ""
 
     def __str__(self):
-        return '\n'.join(["[{type}] {param} {value}".format(type=param_type, param=param_name, value=value)
-                          for (param_name, (param_type, value)) in self.params.items()])
+        return '\n'.join(["[{type}] {param} {value}".format(type=gogui_type, param=param_name, value=value)
+                          for (param_name, (param_type, gogui_type, value)) in self.params.items()])
 
 
 class GoGuiGTPRunner(GTPRunner):
