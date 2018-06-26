@@ -11,7 +11,7 @@ def _read_requirements(filename):
 
 setup(
     name='python-gtp',
-    version='0.2.0',
+    version='0.3.0',
     description='Simple Go Text Protocol wrapper',
     long_description=readme,
     author='Yusaku Mandai',
