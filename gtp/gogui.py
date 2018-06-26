@@ -1,5 +1,6 @@
 import enum
-from typing import Callable, Tuple
+from collections import OrderedDict, namedtuple
+from typing import Callable, Tuple, Sequence
 
 from gtp import Status, GTPRunner
 
@@ -18,6 +19,47 @@ class CommandType(str, enum.Enum):
     VARC = 'varc'
     GFX = 'gfx'
     NONE = 'none'
+
+
+GoGuiParam = namedtuple('GoGuiParam', 'name type value')
+
+
+class GoGuiParams:
+
+    def __init__(self, params: Sequence[GoGuiParam]):
+        self.params = OrderedDict()
+
+        for param in params:
+            self.params[param.name] = (param.type, param.value)
+
+    @property
+    def param_names(self):
+        return self.params.keys()
+
+    def __getattr__(self, name):
+        if name in self.params:
+            return self.params[name][1]
+
+        raise AttributeError
+
+    def update(self, param_name, value):
+        assert param_name in self.params
+
+        param_type = self.params[param_name][0]
+
+        self.params[param_name] = (param_type, value)
+
+    def __call__(self, param_name=None, param_value=None):
+        if param_name is None and param_value is None:
+            return Status.success, str(self)
+
+        self.update(param_name, param_value)
+
+        return Status.success, ""
+
+    def __str__(self):
+        return '\n'.join(["[{type}] {param} {value}".format(type=param_type, param=param_name, value=value)
+                          for (param_name, (param_type, value)) in self.params.items()])
 
 
 class GoGuiGTPRunner(GTPRunner):
