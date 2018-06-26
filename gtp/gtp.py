@@ -30,10 +30,10 @@ class GTPRunner:
 
         self.add_static_callback('protocol_version', '2')
 
-    def add_callback(self, name: str, f: Callable[..., Tuple[Status, str]], arity: int, description: str=None) -> None:
-        self._logger.debug("Add callback '%s' (arity: %d, description: %s)" % (name, arity, description))
+    def add_callback(self, name: str, f: Callable[..., Tuple[Status, str]], arity: int=None, description: str=None) -> None:
+        self._logger.debug("Add callback '%s' (arity: %s, description: %s)" % (name, arity, description))
 
-        if arity < 0:
+        if arity is not None and arity < 0:
             raise ValueError("arity should be greater than or equal to 0, which is %d" % arity)
 
         if name in self._callbacks:
@@ -58,7 +58,7 @@ class GTPRunner:
 
         callback = self._callbacks[command]
 
-        if len(params) != callback.arity:
+        if callback.arity is not None and len(params) != callback.arity:
             return Status.failure, "Callback `%s` required %d argument(s), but provided %d argument(s)" \
                    % (command, callback.arity, len(params))
 

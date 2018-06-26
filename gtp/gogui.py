@@ -33,6 +33,7 @@ class GoGuiGTPRunner(GTPRunner):
                              command_type: CommandType,
                              command_str: str,
                              callback: Callable[..., Tuple[Status, str]],
+                             check_arity=True,
                              display_name: str=None,
                              description: str=None) -> None:
 
@@ -41,7 +42,10 @@ class GoGuiGTPRunner(GTPRunner):
         self._assert_command_tokens(command_tokens)
         self._analyze_callbacks.append("%s/%s/%s" % (command_type.value, display_name or command_str, command_str))
 
-        self.add_callback(command_tokens[0], callback, arity=len(command_tokens) - 1, description=description)
+        arity = len(command_tokens) - 1 if check_arity else None
+
+        if command_tokens[0] not in self.list_commands:
+            self.add_callback(command_tokens[0], callback, arity=arity, description=description)
 
     def cmd_gogui_analyze_commands(self, *_) -> Tuple[Status, str]:
         return Status.success, "\n".join(self._analyze_callbacks)
